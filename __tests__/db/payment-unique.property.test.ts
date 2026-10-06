@@ -11,7 +11,7 @@
 
 import * as fc from "fast-check";
 import { describe, test, beforeAll, afterAll } from "vitest";
-import { PrismaClientKnownRequestError } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 
 // ---------------------------------------------------------------------------
 // Database availability check
@@ -125,7 +125,7 @@ describe("Property 2: Unique payment constraint — no duplicate payments", () =
                 });
               } catch (err) {
                 if (
-                  err instanceof PrismaClientKnownRequestError &&
+                  err instanceof Prisma.PrismaClientKnownRequestError &&
                   err.code === "P2002"
                 ) {
                   threw = true;
