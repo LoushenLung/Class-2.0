@@ -23,12 +23,9 @@ import { upsertScheduleSlotSchema } from '@/lib/validations/schedule';
 
 /**
  * Returns all schedule slots ordered by day then period.
- * Requires an authenticated session (any role).
+ * Public — no authentication required (guest-safe).
  */
 export async function getScheduleSlots(): Promise<Schedule[]> {
-  const authResult = await requireAuth();
-  if (!authResult.ok) return [];
-
   return prisma.schedule.findMany({
     orderBy: [{ dayOfWeek: 'asc' }, { periodOrder: 'asc' }],
   });

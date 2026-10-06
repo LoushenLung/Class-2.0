@@ -37,12 +37,9 @@ function revalidateGalleryPaths(): void {
 
 /**
  * Returns all photo galleries including their photos.
- * Requires authentication (any role).
+ * Public — no authentication required (guest-safe).
  */
 export async function getGalleries(): Promise<(PhotoGallery & { photos: Photo[] })[]> {
-  const authResult = await requireAuth();
-  if (!authResult.ok) return [];
-
   return prisma.photoGallery.findMany({
     include: { photos: true },
     orderBy: { eventDate: 'desc' },

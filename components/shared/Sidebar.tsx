@@ -19,25 +19,29 @@ import {
   Sparkles,
   Menu,
   X,
+  LogIn,
 } from 'lucide-react';
-import type { User as UserType } from '@/lib/types';
+import type { PublicProfile } from '@/actions/profile.actions';
 import LogoutButton from '@/components/auth/LogoutButton';
 
+/** Minimal user shape needed by the sidebar — compatible with User & PublicProfile. */
+type SidebarUser = Pick<PublicProfile, 'id' | 'name' | 'avatarUrl' | 'role'>;
+
 interface SidebarProps {
-  currentUser: UserType | null;
-  allUsers?: UserType[];
+  currentUser: SidebarUser | null;
+  allUsers?: SidebarUser[];
 }
 
 const userNavItems = [
-  { name: 'Beranda', href: '/', icon: Home },
-  { name: 'Keuangan Kas', href: '/kas', icon: Wallet },
-  { name: 'Jadwal & Tugas', href: '/jadwal', icon: Calendar },
-  { name: 'Materi & Modul', href: '/materi', icon: BookOpen },
-  { name: 'Pengumuman', href: '/pengumuman', icon: Megaphone },
-  { name: 'Presensi', href: '/presensi', icon: CheckSquare },
-  { name: 'Galeri Momen', href: '/galeri', icon: ImageIcon },
-  { name: 'Forum Diskusi', href: '/forum', icon: MessageSquare },
-  { name: 'Profil Saya', href: '/profil', icon: User },
+  { name: 'Beranda', href: '/', icon: Home, guestAllowed: true },
+  { name: 'Keuangan Kas', href: '/kas', icon: Wallet, guestAllowed: false },
+  { name: 'Jadwal & Tugas', href: '/jadwal', icon: Calendar, guestAllowed: false },
+  { name: 'Materi & Modul', href: '/materi', icon: BookOpen, guestAllowed: false },
+  { name: 'Pengumuman', href: '/pengumuman', icon: Megaphone, guestAllowed: false },
+  { name: 'Presensi', href: '/presensi', icon: CheckSquare, guestAllowed: false },
+  { name: 'Galeri Momen', href: '/galeri', icon: ImageIcon, guestAllowed: true },
+  { name: 'Forum Diskusi', href: '/forum', icon: MessageSquare, guestAllowed: false },
+  { name: 'Profil Saya', href: '/profil', icon: User, guestAllowed: false },
 ];
 
 const adminNavItems = [
@@ -56,6 +60,7 @@ const roleColors: Record<string, string> = {
   admin: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   bendahara: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   murid: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  guest: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
 };
 
 interface SidebarNavContentProps {
@@ -66,6 +71,7 @@ interface SidebarNavContentProps {
   displayName: string;
   displayRole: string;
   displayAvatar: string;
+  isGuest: boolean;
 }
 
 function SidebarNavContent({
@@ -76,9 +82,14 @@ function SidebarNavContent({
   displayName,
   displayRole,
   displayAvatar,
+  isGuest,
 }: SidebarNavContentProps) {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
+
+  const visibleNavItems = isGuest
+    ? userNavItems.filter((item) => item.guestAllowed)
+    : userNavItems;
 
   return (
     <div className="flex h-full flex-col">
@@ -100,7 +111,7 @@ function SidebarNavContent({
         <p className="px-2 mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600">
           Menu Utama
         </p>
-        {userNavItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           return (
@@ -126,74 +137,120 @@ function SidebarNavContent({
           );
         })}
 
-        {/* Admin section */}
-        <div className="pt-4">
-          <button
-            onClick={() => setAdminExpanded(!adminExpanded)}
-            className="flex w-full items-center justify-between px-2 mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
-          >
-            <span>Manajemen Admin</span>
-            <ChevronRight
-              size={12}
-              className={`transition-transform duration-200 ${adminExpanded ? 'rotate-90' : ''}`}
-            />
-          </button>
+        {/* Guest login prompt */}
+        {isGuest && (
+          <div className="mt-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 text-center">
+            <p className="text-xs text-slate-400 mb-3">
+              Login untuk akses penuh ke semua fitur kelas.
+            </p>
+            <Link
+              href="/login"
+              onClick={onCloseMobile}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all"
+            >
+              <LogIn size={14} />
+              <span>Masuk / Login</span>
+            </Link>
+          </div>
+        )}
 
-          {adminExpanded && (
-            <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onCloseMobile}
-                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
-                      active
-                        ? 'bg-rose-600/15 text-rose-400'
-                        : 'text-slate-500 hover:bg-slate-800/60 hover:text-slate-300'
-                    }`}
-                  >
-                    <Icon
-                      size={16}
-                      className={`shrink-0 ${
-                        active ? 'text-rose-400' : 'text-slate-600 group-hover:text-slate-400'
+        {/* Admin section — hidden for guests */}
+        {!isGuest && (
+          <div className="pt-4">
+            <button
+              onClick={() => setAdminExpanded(!adminExpanded)}
+              className="flex w-full items-center justify-between px-2 mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+            >
+              <span>Manajemen Admin</span>
+              <ChevronRight
+                size={12}
+                className={`transition-transform duration-200 ${adminExpanded ? 'rotate-90' : ''}`}
+              />
+            </button>
+
+            {adminExpanded && (
+              <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
+                {adminNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onCloseMobile}
+                      className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
+                        active
+                          ? 'bg-rose-600/15 text-rose-400'
+                          : 'text-slate-500 hover:bg-slate-800/60 hover:text-slate-300'
                       }`}
-                    />
-                    <span className="text-xs">{item.name}</span>
-                    {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-400" />}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                    >
+                      <Icon
+                        size={16}
+                        className={`shrink-0 ${
+                          active ? 'text-rose-400' : 'text-slate-600 group-hover:text-slate-400'
+                        }`}
+                      />
+                      <span className="text-xs">{item.name}</span>
+                      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-400" />}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* User badge */}
+      {/* User badge / Guest badge */}
       <div className="shrink-0 border-t border-slate-800/60 p-3">
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/60 p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={displayAvatar}
-            alt={displayName}
-            className="h-9 w-9 rounded-full object-cover ring-2 ring-indigo-500/20 shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-100 truncate">{displayName}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className={`inline-block rounded-full border px-1.5 py-0 text-[9px] font-bold capitalize ${
-                  roleColors[displayRole] ?? roleColors.murid
-                }`}
-              >
-                {displayRole}
-              </span>
+        {isGuest ? (
+          <>
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/60 p-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 ring-2 ring-slate-600/30 shrink-0">
+                <User size={18} className="text-slate-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-300 truncate">Tamu</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`inline-block rounded-full border px-1.5 py-0 text-[9px] font-bold capitalize ${roleColors.guest}`}>
+                    guest
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <LogoutButton className="mt-2" />
+            <Link
+              href="/login"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all"
+            >
+              <LogIn size={14} />
+              <span>Masuk ke Akun</span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/60 p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayAvatar}
+                alt={displayName}
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-indigo-500/20 shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-100 truncate">{displayName}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`inline-block rounded-full border px-1.5 py-0 text-[9px] font-bold capitalize ${
+                      roleColors[displayRole] ?? roleColors.murid
+                    }`}
+                  >
+                    {displayRole}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <LogoutButton className="mt-2" />
+          </>
+        )}
       </div>
     </div>
   );
@@ -208,8 +265,9 @@ export default function Sidebar({ currentUser }: SidebarProps) {
     return null;
   }
 
+  const isGuest = currentUser === null;
   const displayName = currentUser?.name ?? 'Tamu';
-  const displayRole = currentUser?.role ?? 'murid';
+  const displayRole = currentUser?.role ?? 'guest';
   const displayAvatar =
     currentUser?.avatarUrl ??
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80';
@@ -222,6 +280,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
     displayName,
     displayRole,
     displayAvatar,
+    isGuest,
   };
 
   return (
@@ -240,13 +299,27 @@ export default function Sidebar({ currentUser }: SidebarProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={displayAvatar}
-            alt={displayName}
-            className="h-7 w-7 rounded-full object-cover ring-2 ring-indigo-500/20"
-          />
-          <span className="text-xs font-bold text-slate-200">{displayName}</span>
+          {isGuest ? (
+            <>
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-3 py-1.5 text-xs font-bold text-indigo-400 hover:bg-indigo-600/30 transition-colors"
+              >
+                <LogIn size={14} />
+                <span>Login</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayAvatar}
+                alt={displayName}
+                className="h-7 w-7 rounded-full object-cover ring-2 ring-indigo-500/20"
+              />
+              <span className="text-xs font-bold text-slate-200">{displayName}</span>
+            </>
+          )}
           <button
             onClick={() => setMobileOpen(true)}
             className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"

@@ -23,7 +23,9 @@ export async function updateSession(request: NextRequest) {
     isAuthRoute ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/api/auth/") ||
-    pathname === "/api/ping";
+    pathname === "/api/ping" ||
+    pathname === "/" ||
+    pathname === "/galeri";
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

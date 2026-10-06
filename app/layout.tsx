@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/shared/Sidebar";
 import { getCurrentUser } from "@/lib/actions/guards";
-import { getProfiles } from "@/actions/profile.actions";
-import type { User } from "@/lib/types";
+import { getPublicProfiles } from "@/actions/profile.actions";
+import type { PublicProfile } from "@/actions/profile.actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +29,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   let currentUserAuth = null;
-  let allUsers: User[] = [];
+  let allUsers: PublicProfile[] = [];
 
   try {
     [currentUserAuth, allUsers] = await Promise.all([
       getCurrentUser(),
-      getProfiles(),
+      getPublicProfiles(),
     ]);
   } catch (err: unknown) {
     if (
@@ -49,16 +49,14 @@ export default async function RootLayout({
     console.error("RootLayout data fetch error:", err);
   }
 
-  // Map CurrentUser → User shape expected by Sidebar (add missing fields with defaults)
-  const currentUser: User | null = currentUserAuth
+  // Map CurrentUser → minimal shape expected by Sidebar
+  const currentUser = currentUserAuth
     ? {
         id: currentUserAuth.id,
         email: currentUserAuth.email,
         name: currentUserAuth.name,
         role: currentUserAuth.role,
         avatarUrl: currentUserAuth.avatarUrl,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       }
     : null;
 

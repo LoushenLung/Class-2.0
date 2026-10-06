@@ -8,7 +8,7 @@
  * SECURITY INVARIANT:
  * - A student (murid) can only record attendance for themselves:
  *   studentId must equal the authenticated user's id.
- * - getAttendanceStats is restricted to admin and bendahara only.
+ * - getAttendanceStats returns only aggregate data (public, guest-safe).
  */
 
 import { revalidatePath } from 'next/cache';
@@ -125,12 +125,8 @@ export async function recordAttendance(
 
 /**
  * Returns aggregated attendance statistics for a given date.
- *
- * - Restricted to admin and bendahara.
- * - studentsCount: total users with role "murid".
- * - presentCount: attendance records with status "HADIR" on the given date.
- * - attendanceRate: (presentCount / studentsCount) × 100, rounded to 2 d.p.
- *   Returns 0 when studentsCount is 0 to avoid division by zero.
+ * Public — no authentication required (guest-safe).
+ * Only returns aggregate counts, not individual student data.
  *
  * Req: 9.3
  *
@@ -140,14 +136,6 @@ export async function getAttendanceStats(
   date: string,
 ): Promise<ActionResult<AttendanceStats>> {
   try {
-    const authResult = await requireAuth();
-    if (!authResult.ok) return authResult.result;
-
-    const { user } = authResult;
-
-    const roleResult = requireRole(user, ['admin', 'bendahara']);
-    if (!roleResult.ok) return roleResult.result;
-
     const [studentsCount, presentCount] = await Promise.all([
       prisma.user.count({ where: { role: 'murid' } }),
       prisma.attendance.count({

@@ -108,3 +108,29 @@ export async function getProfiles(): Promise<User[]> {
 
   return prisma.user.findMany();
 }
+
+// ─── getPublicProfiles ────────────────────────────────────────────────────────
+
+/** Minimal public profile shape — no email or sensitive data. */
+export interface PublicProfile {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  role: string;
+}
+
+/**
+ * Returns all user profiles with minimal public fields.
+ * Public — no authentication required (guest-safe).
+ * Used by the homepage members widget and layout sidebar.
+ */
+export async function getPublicProfiles(): Promise<PublicProfile[]> {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+      role: true,
+    },
+  });
+}

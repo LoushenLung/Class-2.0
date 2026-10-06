@@ -16,7 +16,7 @@ import { getCurrentUser } from '@/lib/actions/guards';
 import { getScheduleSlots } from '@/actions/schedule.actions';
 import { getAnnouncements } from '@/actions/announcement.actions';
 import { getAttendanceStats } from '@/actions/attendance.actions';
-import { getProfiles } from '@/actions/profile.actions';
+import { getPublicProfiles } from '@/actions/profile.actions';
 
 export default async function HomePage() {
   const todayStr = new Date().toISOString().split('T')[0];
@@ -27,7 +27,7 @@ export default async function HomePage() {
       getScheduleSlots(),
       getAnnouncements(),
       getAttendanceStats(todayStr),
-      getProfiles(),
+      getPublicProfiles(),
     ]);
 
   const attendance = attendanceResult.success ? attendanceResult.data : { attendanceRate: 0, presentCount: 0, studentsCount: 0 };
@@ -105,6 +105,23 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Guest CTA Banner */}
+      {!currentUser && (
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-indigo-500/5 backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-indigo-500/10 blur-2xl" />
+          <div className="relative z-10 text-center sm:text-left">
+            <p className="text-sm font-bold text-white">Kamu sedang menjelajah sebagai Tamu</p>
+            <p className="text-xs text-slate-400 mt-0.5">Login untuk mengakses kas, jadwal, forum, presensi, dan fitur lainnya.</p>
+          </div>
+          <Link
+            href="/login"
+            className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all shrink-0"
+          >
+            Masuk ke Akun
+          </Link>
+        </div>
+      )}
 
       {/* Bento grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

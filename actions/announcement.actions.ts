@@ -42,18 +42,19 @@ function canMutate(userRole: string, userId: string, authorId: string): boolean 
 // ---------------------------------------------------------------------------
 
 /**
- * Returns published announcements for regular users, or all announcements
- * for admin/bendahara. Returns an empty array on any error.
+ * Returns published announcements for regular users and guests,
+ * or all announcements for admin/bendahara.
+ * Public — no authentication required (guest-safe).
  *
  * Req: 7.1
  */
 export async function getAnnouncements(): Promise<Announcement[]> {
   try {
     const authResult = await requireAuth();
-    if (!authResult.ok) return [];
-
-    const { user } = authResult;
-    const isPrivileged = user.role === 'admin' || user.role === 'bendahara';
+    const user = authResult.ok ? authResult.user : null;
+    const isPrivileged =
+      user !== null &&
+      (user.role === 'admin' || user.role === 'bendahara');
 
     return await prisma.announcement.findMany({
       where: isPrivileged ? undefined : { status: 'published' },
