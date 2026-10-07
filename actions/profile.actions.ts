@@ -125,12 +125,17 @@ export interface PublicProfile {
  * Used by the homepage members widget and layout sidebar.
  */
 export async function getPublicProfiles(): Promise<PublicProfile[]> {
-  return prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      avatarUrl: true,
-      role: true,
-    },
-  });
+  try {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        avatarUrl: true,
+        role: true,
+      },
+    });
+  } catch (error) {
+    console.error('[getPublicProfiles] Error fetching public profiles:', error);
+    return [];
+  }
 }

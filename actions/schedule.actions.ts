@@ -26,9 +26,14 @@ import { upsertScheduleSlotSchema } from '@/lib/validations/schedule';
  * Public — no authentication required (guest-safe).
  */
 export async function getScheduleSlots(): Promise<Schedule[]> {
-  return prisma.schedule.findMany({
-    orderBy: [{ dayOfWeek: 'asc' }, { periodOrder: 'asc' }],
-  });
+  try {
+    return await prisma.schedule.findMany({
+      orderBy: [{ dayOfWeek: 'asc' }, { periodOrder: 'asc' }],
+    });
+  } catch (error) {
+    console.error('[getScheduleSlots] Error fetching schedule slots:', error);
+    return [];
+  }
 }
 
 // ---------------------------------------------------------------------------

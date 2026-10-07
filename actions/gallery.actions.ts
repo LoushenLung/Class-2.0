@@ -40,10 +40,15 @@ function revalidateGalleryPaths(): void {
  * Public — no authentication required (guest-safe).
  */
 export async function getGalleries(): Promise<(PhotoGallery & { photos: Photo[] })[]> {
-  return prisma.photoGallery.findMany({
-    include: { photos: true },
-    orderBy: { eventDate: 'desc' },
-  });
+  try {
+    return await prisma.photoGallery.findMany({
+      include: { photos: true },
+      orderBy: { eventDate: 'desc' },
+    });
+  } catch (error) {
+    console.error('[getGalleries] Error fetching galleries:', error);
+    return [];
+  }
 }
 
 // ─── createGallery ────────────────────────────────────────────────────────────

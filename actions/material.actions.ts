@@ -179,10 +179,15 @@ export async function deleteMaterial(
  * Requires authentication (any role).
  */
 export async function getMaterials(): Promise<Material[]> {
-  const authResult = await requireAuth();
-  if (!authResult.ok) return [];
+  try {
+    const authResult = await requireAuth();
+    if (!authResult.ok) return [];
 
-  return prisma.material.findMany({
-    orderBy: { createdAt: 'desc' },
-  });
+    return await prisma.material.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (error) {
+    console.error('[getMaterials] Error fetching materials:', error);
+    return [];
+  }
 }
