@@ -13,7 +13,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { requireAuth, requireRole } from '@/lib/actions/guards';
 import { formatError } from '@/lib/utils';
-import type { ActionResult, User } from '@/lib/types';
+import type { ActionResult, User, UserRole } from '@/lib/types';
 import { updateProfileSchema } from '@/lib/validations/profile';
 import { uploadToCloudinary, AVATAR_FOLDER } from '@/lib/cloudinary';
 
@@ -139,3 +139,137 @@ export async function getPublicProfiles(): Promise<PublicProfile[]> {
     return [];
   }
 }
+
+// ─── updateUserRole ──────────────────────────────────────────────────────────
+
+/**
+ * Updates a user's role.
+ *
+ * SECURITY: Restricted exclusively to administrators.
+ * Prevents removing the last admin's role to prevent lock-out.
+ */
+export async function updateUserRole(
+  userId: string,
+  newRole: UserRole
+): Promise<ActionResult<User>> {
+  const authResult = await requireAuth();
+  if (!authResult.ok) return authResult.result;
+
+  const roleCheck = requireRole(authResult.user, ['admin']);
+  if (!roleCheck.ok) return roleCheck.result;
+
+  const validRoles: UserRole[] = ['admin', 'bendahara', 'murid'];
+  if (!validRoles.includes(newRole)) {
+    return { success: false, error: 'Role yang dipilih tidak valid.' };
+  }
+
+  try {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!target) {
+      return { success: false, error: 'Pengguna tidak ditemukan.' };
+    }
+
+    // Safeguard: Prevent admin from demoting themselves if they are the sole admin
+    if (authResult.user.id === userId && newRole !== 'admin') {
+      const adminCount = await prisma.user.count({
+        where: { role: 'admin' },
+      });
+      if (adminCount <= 1) {
+        return {
+          success: false,
+          error: 'Tidak dapat mengubah role karena Anda adalah satu-satunya admin aktif.',
+        };
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { role: newRole },
+    });
+
+    revalidatePath('/admin/users');
+    revalidatePath('/profil');
+    revalidatePath('/', 'layout');
+
+    return { success: true, data: updated };
+  } catch (err) {
+    return { success: false, error: formatError(err) };
+  }
+}
+
+// ─── adminUpdateUserProfile ──────────────────────────────────────────────────
+
+/**
+ * Updates a user's name and/or role as an administrator.
+ *
+ * SECURITY: Restricted exclusively to administrators.
+ */
+export async function adminUpdateUserProfile(
+  userId: string,
+  data: { name?: string; role?: UserRole }
+): Promise<ActionResult<User>> {
+  const authResult = await requireAuth();
+  if (!authResult.ok) return authResult.result;
+
+  const roleCheck = requireRole(authResult.user, ['admin']);
+  if (!roleCheck.ok) return roleCheck.result;
+
+  try {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!target) {
+      return { success: false, error: 'Pengguna tidak ditemukan.' };
+    }
+
+    const trimmedName = data.name?.trim();
+    if (trimmedName !== undefined) {
+      if (trimmedName.length < 2 || trimmedName.length > 100) {
+        return {
+          success: false,
+          error: 'Nama harus memiliki panjang antara 2 hingga 100 karakter.',
+        };
+      }
+    }
+
+    if (data.role !== undefined) {
+      const validRoles: UserRole[] = ['admin', 'bendahara', 'murid'];
+      if (!validRoles.includes(data.role)) {
+        return { success: false, error: 'Role yang dipilih tidak valid.' };
+      }
+
+      if (authResult.user.id === userId && data.role !== 'admin') {
+        const adminCount = await prisma.user.count({
+          where: { role: 'admin' },
+        });
+        if (adminCount <= 1) {
+          return {
+            success: false,
+            error: 'Tidak dapat mengubah role karena Anda adalah satu-satunya admin aktif.',
+          };
+        }
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(trimmedName !== undefined && { name: trimmedName }),
+        ...(data.role !== undefined && { role: data.role }),
+      },
+    });
+
+    revalidatePath('/admin/users');
+    revalidatePath('/profil');
+    revalidatePath('/', 'layout');
+
+    return { success: true, data: updated };
+  } catch (err) {
+    return { success: false, error: formatError(err) };
+  }
+}
+

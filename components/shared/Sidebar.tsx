@@ -91,6 +91,8 @@ function SidebarNavContent({
     ? userNavItems.filter((item) => item.guestAllowed)
     : userNavItems;
 
+  const isPrivileged = displayRole === 'admin' || displayRole === 'bendahara';
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
@@ -154,8 +156,8 @@ function SidebarNavContent({
           </div>
         )}
 
-        {/* Admin section — hidden for guests */}
-        {!isGuest && (
+        {/* Admin section — only for admin & bendahara */}
+        {isPrivileged && (
           <div className="pt-4">
             <button
               onClick={() => setAdminExpanded(!adminExpanded)}
@@ -261,7 +263,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [adminExpanded, setAdminExpanded] = useState(false);
 
-  if (pathname === '/login' || pathname?.startsWith('/auth')) {
+  if (pathname === '/login' || pathname === '/signup' || pathname?.startsWith('/auth')) {
     return null;
   }
 
