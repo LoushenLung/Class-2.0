@@ -1,26 +1,218 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* =============================================================================
+   web-ui-ux-pro — Tailwind v4 CSS-first design token system
+   Sumber: tailwind-preset.js (v3) → diterjemahkan ke @theme (v4)
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   FONT LOAD — Inter dari Google Fonts
+   --------------------------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@theme {
+  /* -------------------------------------------------------------------------
+     WARNA — KETAT (mengganti default Tailwind sepenuhnya)
+     Kontras WCAG AA sudah dihitung; jangan pakai neutral-400 atau lebih
+     terang untuk teks.
+     ---------------------------------------------------------------------- */
+
+  /* Primary — blue */
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-500: #3B82F6;   /* dekoratif / focus ring */
+  --color-primary-600: #2563EB;   /* tombol utama, link — putih: 5.17:1 ✅ */
+  --color-primary-700: #1D4ED8;   /* hover/active — putih: 6.70:1 ✅ */
+  --color-primary-900: #1E3A8A;   /* teks di atas primary-50 — 9.52:1 ✅ */
+
+  /* Neutral — slate */
+  --color-neutral-0:   #FFFFFF;
+  --color-neutral-50:  #F8FAFC;
+  --color-neutral-100: #F1F5F9;
+  --color-neutral-200: #E2E8F0;
+  --color-neutral-300: #CBD5E1;
+  --color-neutral-400: #94A3B8;   /* ikon non-esensial — jangan untuk teks */
+  --color-neutral-500: #64748B;   /* teks tersier, border input — 4.76:1 ✅ */
+  --color-neutral-600: #475569;   /* teks sekunder — 7.58:1 ✅ */
+  --color-neutral-700: #334155;   /* teks isi ditekankan — 10.35:1 ✅ */
+  --color-neutral-800: #1E293B;   /* surface gelap */
+  --color-neutral-900: #0F172A;   /* teks utama, latar dark — 17.85:1 ✅ */
+
+  /* Semantic */
+  --color-success-50:  #F0FDF4;
+  --color-success-700: #15803D;   /* 5.02:1 ✅ */
+  --color-warning-50:  #FFFBEB;
+  --color-warning-700: #B45309;   /* 5.02:1 ✅ */
+  --color-danger-50:   #FEF2F2;
+  --color-danger-700:  #B91C1C;   /* 6.47:1 ✅ */
+  --color-info-50:     #F0F9FF;
+  --color-info-700:    #0369A1;   /* 5.93:1 ✅ */
+
+  /* Transparan & literal */
+  --color-transparent: transparent;
+  --color-current:     currentColor;
+  --color-white:       #FFFFFF;
+  --color-black:       #000000;
+
+  /* -------------------------------------------------------------------------
+     FONT FAMILY — KETAT (hanya sans + mono)
+     -------------------------------------------------------------------------- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  /* -------------------------------------------------------------------------
+     Z-INDEX — KETAT (bernama, tidak ada angka acak)
+     Pemakaian: z-header, z-modal, z-toast
+     -------------------------------------------------------------------------- */
+  --z-index-auto:     auto;
+  --z-index-base:     0;
+  --z-index-raised:   10;
+  --z-index-header:   20;
+  --z-index-dropdown: 30;
+  --z-index-modal:    40;
+  --z-index-toast:    50;
+
+  /* -------------------------------------------------------------------------
+     SPACING — LONGGAR (extend, grid 8pt; key sesuai konvensi Tailwind n×4px)
+     space-11 = 44px = touch target minimum
+     -------------------------------------------------------------------------- */
+  --spacing-1:  4px;
+  --spacing-2:  8px;
+  --spacing-3:  12px;
+  --spacing-4:  16px;
+  --spacing-6:  24px;
+  --spacing-8:  32px;
+  --spacing-11: 44px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  /* -------------------------------------------------------------------------
+     FONT SIZE — LONGGAR (fluid dengan clamp(), responsive tanpa media query)
+     -------------------------------------------------------------------------- */
+  --text-xs:   clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
+  --text-sm:   clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-xl:   clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-2xl:  clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --text-3xl:  clamp(1.875rem, 1.5rem + 1.9vw, 2.75rem);
+  --text-4xl:  clamp(2.25rem, 1.8rem + 2.2vw, 3.5rem);
+  --text-5xl:  clamp(2.5rem, 1.7rem + 4vw, 4.5rem);
+
+  /* -------------------------------------------------------------------------
+     BORDER RADIUS — LONGGAR
+     -------------------------------------------------------------------------- */
+  --radius-sm:   4px;    /* badge, checkbox */
+  --radius:      8px;    /* default */
+  --radius-md:   8px;    /* button, input */
+  --radius-lg:   12px;   /* card, dropdown */
+  --radius-xl:   16px;   /* modal, panel */
+  --radius-full: 9999px; /* avatar, pill, switch */
+
+  /* -------------------------------------------------------------------------
+     BOX SHADOW — LONGGAR (3 level elevasi, maks 2 lapis)
+     -------------------------------------------------------------------------- */
+  --shadow-sm:  0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow:     0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md:  0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg:  0 4px 8px rgba(15, 23, 42, 0.08), 0 12px 32px rgba(15, 23, 42, 0.12);
+
+  /* -------------------------------------------------------------------------
+     EASING
+     -------------------------------------------------------------------------- */
+  --ease-out-soft: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-soft:  cubic-bezier(0.4, 0, 1, 1);
+
+  /* -------------------------------------------------------------------------
+     DURASI — UI feedback tidak boleh > 300ms
+     -------------------------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+
+  /* -------------------------------------------------------------------------
+     KEYFRAMES — hanya opacity dan transform (aman untuk compositor)
+     -------------------------------------------------------------------------- */
+  --animate-fade-in:  fade-in  200ms cubic-bezier(0.2, 0, 0, 1) both;
+  --animate-slide-up: slide-up 200ms cubic-bezier(0.2, 0, 0, 1) both;
+  --animate-toast-in: toast-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
+  --animate-modal-in: modal-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* =============================================================================
+   SEMANTIC CSS VARIABLES — siap pakai tanpa kelas Tailwind
+   ============================================================================= */
+:root {
+  --bg:           var(--color-neutral-50);
+  --surface:      var(--color-neutral-0);
+  --text:         var(--color-neutral-900);
+  --text-muted:   var(--color-neutral-600);
+  --border:       var(--color-neutral-200);
+  --border-strong: var(--color-neutral-500);
+  --accent:       var(--color-primary-600);
+  --accent-hover: var(--color-primary-700);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg:           #0F172A;
+    --surface:      #1E293B;
+    --text:         #F8FAFC;
+    --text-muted:   #CBD5E1;
+    --border:       #334155;
+    --border-strong: #94A3B8;
+    --accent:       #60A5FA;
+    --accent-hover: #93C5FD;
   }
 }
 
+/* =============================================================================
+   BASE STYLES
+   ============================================================================= */
+html {
+  color-scheme: light dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible — aksesibilitas keyboard */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

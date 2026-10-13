@@ -11,6 +11,8 @@ import {
   MessageCircle,
   Sparkles,
   Clock,
+  Users,
+  TrendingUp,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/actions/guards';
 import { getScheduleSlots } from '@/actions/schedule.actions';
@@ -30,9 +32,10 @@ export default async function HomePage() {
       getPublicProfiles(),
     ]);
 
-  const attendance = attendanceResult.success ? attendanceResult.data : { attendanceRate: 0, presentCount: 0, studentsCount: 0 };
+  const attendance = attendanceResult.success
+    ? attendanceResult.data
+    : { attendanceRate: 0, presentCount: 0, studentsCount: 0 };
 
-  // Today's day of week: JS getDay() → 0=Sun … convert to Mon=0 … Fri=4
   const now = new Date();
   const jsDow = now.getDay();
   const todayDow = jsDow === 0 ? 0 : Math.min(jsDow - 1, 4);
@@ -40,48 +43,60 @@ export default async function HomePage() {
     .filter((s) => s.dayOfWeek === todayDow && !s.isBreak)
     .sort((a, b) => a.periodOrder - b.periodOrder);
 
-  // Countdown to UTS
   const targetDate = new Date('2026-10-12T08:00:00');
-  const diffDays = Math.max(0, Math.ceil((targetDate.getTime() - now.getTime()) / 86_400_000));
+  const diffDays = Math.max(
+    0,
+    Math.ceil((targetDate.getTime() - now.getTime()) / 86_400_000)
+  );
 
   const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const;
   const currentDayName = DAY_NAMES[now.getDay() === 0 ? 6 : now.getDay() - 1] ?? 'Hari Ini';
 
   const publishedAnnouncements = announcements.filter((a) => a.status === 'published');
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B0B1A] via-[#15152D] to-purple-950 px-6 py-12 text-white shadow-[0_0_40px_rgba(138,43,226,0.15)] border border-purple-500/20 md:px-12 md:py-16">
-        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
+  /** Radius of the attendance donut */
+  const R = 40;
+  const circ = 2 * Math.PI * R;
+  const dashOffset = circ * (1 - attendance.attendanceRate / 100);
 
-        <div className="relative z-10 grid gap-8 md:grid-cols-2 md:items-center">
+  return (
+    <div className="space-y-8 animate-fade-in motion-reduce:animate-none">
+
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm px-6 py-10 md:px-10 md:py-12">
+        {/* Subtle blue tint blob */}
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary-50 opacity-60 blur-3xl" />
+
+        <div className="relative z-raised grid gap-8 md:grid-cols-2 md:items-center">
+          {/* Text block */}
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3.5 py-1 text-xs font-semibold text-purple-300 ring-1 ring-purple-500/30">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-              {currentUser ? `Halo, ${currentUser.name}!` : 'Selamat Datang di Hub RPL 1'}
+            {/* Greeting badge */}
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 ring-1 ring-primary-200">
+              <Sparkles className="h-3.5 w-3.5 text-primary-500" />
+              {currentUser ? `Halo, ${currentUser.name}!` : 'Selamat Datang di Web Kelas RPL 1'}
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
+
+            <h1 className="text-5xl font-bold tracking-tight text-neutral-900">
               Web Kelas Digital{' '}
-              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                RPL 1 2026/2027
-              </span>
+              <span className="text-primary-600">RPL 1</span>{' '}
+              <span className="text-neutral-400">2026/2027</span>
             </h1>
-            <p className="max-w-md text-sm text-slate-300">
+
+            <p className="max-w-md text-base text-neutral-600">
               Pusat informasi, transparansi kas kelas, koordinasi akademik, dan album kenangan bersama.
             </p>
+
             <div className="flex flex-wrap gap-3 pt-2">
               <Link
                 href="/kas"
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 px-5 text-sm font-bold text-white shadow-[0_0_15px_rgba(138,43,226,0.5)] hover:from-purple-500 hover:to-blue-500 transition-all cursor-pointer"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-primary-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors duration-[120ms]"
               >
                 <Wallet className="mr-2 h-4 w-4" />
                 Lihat Kas
               </Link>
               <Link
                 href="/jadwal"
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-white/5 backdrop-blur-md border border-white/10 px-5 text-sm font-bold text-white hover:bg-white/10 transition-all cursor-pointer"
+                className="inline-flex h-11 items-center justify-center rounded-md border border-neutral-300 bg-white px-5 text-sm font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-[120ms]"
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 Lihat Jadwal
@@ -89,16 +104,16 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Countdown */}
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+          {/* Countdown card */}
+          <div className="flex flex-col items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 p-8 text-center shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
               Countdown UTS Semester 1
             </span>
-            <div className="mt-3 flex items-center justify-center gap-1.5">
-              <span className="text-5xl font-black tabular-nums tracking-tight text-white">{diffDays}</span>
-              <span className="text-lg font-semibold text-slate-300">Hari Lagi</span>
+            <div className="mt-4 flex items-baseline justify-center gap-2">
+              <span className="text-5xl font-bold tabular-nums text-neutral-900">{diffDays}</span>
+              <span className="text-lg font-medium text-neutral-500">Hari Lagi</span>
             </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
+            <div className="mt-4 flex items-center gap-1.5 text-sm text-neutral-500">
               <Clock className="h-3.5 w-3.5" />
               <span>Target Mulai: 12 Oktober 2026</span>
             </div>
@@ -106,176 +121,188 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Guest CTA Banner */}
+      {/* ── Guest CTA banner ── */}
       {!currentUser && (
-        <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-indigo-500/5 backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-indigo-500/10 blur-2xl" />
-          <div className="relative z-10 text-center sm:text-left">
-            <p className="text-sm font-bold text-white">Kamu sedang menjelajah sebagai Tamu</p>
-            <p className="text-xs text-slate-400 mt-0.5">Login untuk mengakses kas, jadwal, forum, presensi, dan fitur lainnya.</p>
+        <div className="relative overflow-hidden rounded-xl border border-primary-200 bg-primary-50 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-slide-up motion-reduce:animate-none">
+          <div>
+            <p className="text-sm font-semibold text-neutral-900">Kamu sedang menjelajah sebagai Tamu</p>
+            <p className="text-sm text-neutral-600 mt-0.5">
+              Login untuk mengakses kas, jadwal, forum, presensi, dan fitur lainnya.
+            </p>
           </div>
           <Link
             href="/login"
-            className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all shrink-0"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors duration-[120ms] shrink-0"
           >
             Masuk ke Akun
           </Link>
         </div>
       )}
 
-      {/* Bento grid */}
+      {/* ── Bento grid ── */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Announcements */}
-        <div className="rounded-3xl border border-white/10 bg-[#15152D]/80 backdrop-blur-md p-6 shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white flex flex-col md:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-4">
-            <h2 className="flex items-center gap-2 font-bold text-lg">
-              <Megaphone className="h-5 w-5 text-indigo-400" />
+
+        {/* Announcements — spans 2 cols */}
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm flex flex-col md:col-span-2">
+          <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
+              <Megaphone className="h-5 w-5 text-primary-500" />
               Pengumuman Terbaru
             </h2>
-            <Link href="/pengumuman" className="text-xs font-semibold text-indigo-400 hover:underline">
-              Semua
+            <Link href="/pengumuman" className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-[120ms]">
+              Semua →
             </Link>
           </div>
-          <div className="mt-4 flex-1 space-y-4">
+
+          <div className="mt-4 flex-1 space-y-3">
             {publishedAnnouncements.slice(0, 3).length > 0 ? (
               publishedAnnouncements.slice(0, 3).map((ann) => (
-                <div key={ann.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-indigo-300 font-bold uppercase">Pengumuman</span>
-                    <span className="text-[10px] text-slate-400">
+                <div key={ann.id} className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 hover:border-primary-200 hover:bg-primary-50 transition-all duration-[120ms]">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="inline-block rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700 ring-1 ring-primary-200">
+                      Pengumuman
+                    </span>
+                    <span className="text-xs text-neutral-400">
                       {ann.publishedAt
                         ? new Date(ann.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
                         : new Date(ann.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                     </span>
                   </div>
-                  <h3 className="font-bold text-white text-sm">{ann.title}</h3>
-                  <p className="mt-1 line-clamp-2 text-xs text-slate-400">{ann.content}</p>
+                  <h3 className="font-semibold text-neutral-900 text-sm">{ann.title}</h3>
+                  <p className="mt-1 line-clamp-2 text-sm text-neutral-500">{ann.content}</p>
                 </div>
               ))
             ) : (
-              <div className="flex h-32 flex-col items-center justify-center text-center text-slate-400">
-                <AlertCircle className="h-8 w-8 stroke-1 text-slate-500 mb-2" />
-                <p className="text-xs">Tidak ada pengumuman</p>
+              <div className="flex h-32 flex-col items-center justify-center text-center text-neutral-400">
+                <AlertCircle className="h-8 w-8 stroke-1 text-neutral-300 mb-2" />
+                <p className="text-sm">Tidak ada pengumuman</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Today's schedule */}
-        <div className="rounded-3xl border border-white/10 bg-[#15152D]/80 backdrop-blur-md p-6 shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-4">
-            <h2 className="flex items-center gap-2 font-bold text-lg">
-              <Calendar className="h-5 w-5 text-indigo-400" />
-              Hari Ini ({currentDayName})
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
+              <Calendar className="h-5 w-5 text-primary-500" />
+              Hari Ini <span className="text-neutral-400 font-normal text-sm">({currentDayName})</span>
             </h2>
-            <Link href="/jadwal" className="text-xs font-semibold text-indigo-400 hover:underline">
-              Lengkap
+            <Link href="/jadwal" className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-[120ms]">
+              Lengkap →
             </Link>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-2">
             {todaySlots.length > 0 ? (
               todaySlots.map((slot) => (
-                <div key={slot.id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div key={slot.id} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-indigo-300">{slot.periodLabel}</span>
-                    <span className="text-slate-400">{slot.room}</span>
+                    <span className="font-semibold text-primary-600">{slot.periodLabel}</span>
+                    <span className="text-neutral-400">{slot.room}</span>
                   </div>
-                  <h3 className="mt-1 font-bold text-white text-sm">{slot.subject ?? '-'}</h3>
-                  {slot.teacher && <p className="text-[11px] text-slate-400 mt-0.5">{slot.teacher}</p>}
+                  <h3 className="mt-1 font-semibold text-neutral-900 text-sm">{slot.subject ?? '-'}</h3>
+                  {slot.teacher && <p className="text-xs text-neutral-500 mt-0.5">{slot.teacher}</p>}
                 </div>
               ))
             ) : (
-              <div className="flex h-32 flex-col items-center justify-center text-center text-slate-400">
-                <CheckCircle className="h-8 w-8 stroke-1 text-slate-500 mb-2" />
-                <p className="text-xs">Tidak ada jadwal hari ini</p>
+              <div className="flex h-32 flex-col items-center justify-center text-center text-neutral-400">
+                <CheckCircle className="h-8 w-8 stroke-1 text-neutral-300 mb-2" />
+                <p className="text-sm">Tidak ada jadwal hari ini</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Attendance widget */}
-        <div className="rounded-3xl border border-white/10 bg-[#15152D]/80 backdrop-blur-md p-6 shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-4">
-            <h2 className="flex items-center gap-2 font-bold text-lg">
-              <CheckCircle className="h-5 w-5 text-indigo-400" />
+        {/* Attendance */}
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
+              <TrendingUp className="h-5 w-5 text-primary-500" />
               Kehadiran Hari Ini
             </h2>
-            <Link href="/presensi" className="text-xs font-semibold text-indigo-400 hover:underline">
-              Presensi
+            <Link href="/presensi" className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-[120ms]">
+              Presensi →
             </Link>
           </div>
-          <div className="mt-4 space-y-4 text-center">
+          <div className="mt-4 flex flex-col items-center gap-3 text-center">
             <div className="relative inline-flex items-center justify-center">
-              <svg className="h-24 w-24 transform -rotate-90">
-                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" className="text-slate-700" fill="transparent" />
+              <svg className="h-24 w-24 -rotate-90" aria-hidden="true">
+                <circle cx="48" cy="48" r={R} stroke="currentColor" strokeWidth="8" className="text-neutral-100" fill="transparent" />
                 <circle
-                  cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8"
-                  className="text-indigo-500"
-                  strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={2 * Math.PI * 40 * (1 - attendance.attendanceRate / 100)}
+                  cx="48" cy="48" r={R} stroke="currentColor" strokeWidth="8"
+                  className="text-primary-500"
+                  strokeDasharray={circ}
+                  strokeDashoffset={dashOffset}
                   strokeLinecap="round" fill="transparent"
+                  style={{ transition: 'stroke-dashoffset var(--duration-slow) var(--ease-out-soft)' }}
                 />
               </svg>
-              <span className="absolute text-lg font-black text-white">{attendance.attendanceRate}%</span>
+              <span className="absolute text-lg font-bold text-neutral-900">{attendance.attendanceRate}%</span>
             </div>
-            <p className="text-xs text-slate-400">
-              <span className="font-bold text-white">{attendance.presentCount}</span> dari{' '}
-              <span className="font-bold text-white">{attendance.studentsCount}</span> siswa hadir.
+            <p className="text-sm text-neutral-500">
+              <span className="font-semibold text-neutral-900">{attendance.presentCount}</span> dari{' '}
+              <span className="font-semibold text-neutral-900">{attendance.studentsCount}</span> siswa hadir
             </p>
           </div>
         </div>
 
         {/* Quick links */}
-        <div className="rounded-3xl border border-white/10 bg-[#15152D]/80 backdrop-blur-md p-6 shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-4">
-            <h2 className="flex items-center gap-2 font-bold text-lg">
-              <ExternalLink className="h-5 w-5 text-indigo-400" />
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
+              <ExternalLink className="h-5 w-5 text-primary-500" />
               Akses Cepat
             </h2>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Link href="/materi" className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-center hover:scale-[1.02] transition-transform">
-              <FileText className="h-5 w-5 text-indigo-400" />
-              <span className="text-[10px] font-bold">Perpustakaan</span>
-            </Link>
-            <Link href="/forum" className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-center hover:scale-[1.02] transition-transform">
-              <MessageCircle className="h-5 w-5 text-indigo-400" />
-              <span className="text-[10px] font-bold">Forum Diskusi</span>
-            </Link>
-            <Link href="/galeri" className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-center hover:scale-[1.02] transition-transform">
-              <Sparkles className="h-5 w-5 text-indigo-400" />
-              <span className="text-[10px] font-bold">Galeri</span>
-            </Link>
-            <Link href="/kas" className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-center hover:scale-[1.02] transition-transform">
-              <Wallet className="h-5 w-5 text-indigo-400" />
-              <span className="text-[10px] font-bold">Kas Kelas</span>
-            </Link>
+            {[
+              { href: '/materi', icon: FileText, label: 'Perpustakaan' },
+              { href: '/forum', icon: MessageCircle, label: 'Forum Diskusi' },
+              { href: '/galeri', icon: Sparkles, label: 'Galeri' },
+              { href: '/kas', icon: Wallet, label: 'Kas Kelas' },
+            ].map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex flex-col items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-center hover:border-primary-200 hover:bg-primary-50 hover:shadow-sm transition-all duration-[120ms] group"
+              >
+                <Icon className="h-5 w-5 text-neutral-400 group-hover:text-primary-500 transition-colors duration-[120ms]" />
+                <span className="text-xs font-medium text-neutral-600 group-hover:text-primary-700">{label}</span>
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Org members */}
-        <div className="rounded-3xl border border-white/10 bg-[#15152D]/80 backdrop-blur-md p-6 shadow-[0_0_15px_rgba(0,0,0,0.5)] text-white">
-          <div className="border-b border-slate-700 pb-4 mb-4">
-            <h2 className="font-bold text-lg">Anggota Kelas ({profiles.length})</h2>
+        {/* Class members */}
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="pb-4 mb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
+              <Users className="h-5 w-5 text-primary-500" />
+              Anggota Kelas
+              <span className="ml-auto inline-block rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700">
+                {profiles.length}
+              </span>
+            </h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {profiles.slice(0, 8).map((user) => (
+            {profiles.slice(0, 10).map((user) => (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 key={user.id}
                 src={user.avatarUrl ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80'}
                 alt={user.name}
                 title={user.name}
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-indigo-500/20"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm"
               />
             ))}
-            {profiles.length > 8 && (
-              <div className="h-9 w-9 rounded-full bg-indigo-600/20 ring-2 ring-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-300">
-                +{profiles.length - 8}
+            {profiles.length > 10 && (
+              <div className="h-9 w-9 rounded-full bg-primary-50 ring-2 ring-white shadow-sm flex items-center justify-center text-xs font-semibold text-primary-600">
+                +{profiles.length - 10}
               </div>
             )}
           </div>
         </div>
+
       </div>
     </div>
   );

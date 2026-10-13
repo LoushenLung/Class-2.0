@@ -56,11 +56,12 @@ const adminNavItems = [
   { name: 'Kelola Anggota', href: '/admin/users', icon: Users },
 ];
 
+/** Role badge styles — semantic tokens */
 const roleColors: Record<string, string> = {
-  admin: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  bendahara: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  murid: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  guest: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  admin:     'bg-danger-50 text-danger-700 border border-danger-700/20',
+  bendahara: 'bg-warning-50 text-warning-700 border border-warning-700/20',
+  murid:     'bg-primary-50 text-primary-700 border border-primary-700/20',
+  guest:     'bg-neutral-100 text-neutral-600 border border-neutral-300',
 };
 
 interface SidebarNavContentProps {
@@ -94,15 +95,17 @@ function SidebarNavContent({
   const isPrivileged = displayRole === 'admin' || displayRole === 'bendahara';
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={{ background: 'var(--surface)' }}>
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-800/60 px-5">
-        <Sparkles className="h-6 w-6 text-indigo-400 animate-pulse" />
+      <div className="flex h-16 shrink-0 items-center gap-2.5 px-5" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 shrink-0">
+          <Sparkles className="h-4 w-4 text-white" />
+        </div>
         <div>
-          <span className="block bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-base font-extrabold tracking-tight text-transparent">
+          <span className="block text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
             RPL 1
           </span>
-          <span className="block text-[9px] text-slate-500 -mt-0.5 tracking-widest uppercase">
+          <span className="block text-xs text-neutral-500 -mt-0.5 tracking-widest uppercase">
             2026/2027
           </span>
         </div>
@@ -110,7 +113,7 @@ function SidebarNavContent({
 
       {/* Nav */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <p className="px-2 mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600">
+        <p className="px-2 mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">
           Menu Utama
         </p>
         {visibleNavItems.map((item) => {
@@ -121,34 +124,34 @@ function SidebarNavContent({
               key={item.href}
               href={item.href}
               onClick={onCloseMobile}
-              className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-[120ms] ${
                 active
-                  ? 'bg-indigo-600/20 text-indigo-400 shadow-sm shadow-indigo-500/10'
-                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
               }`}
             >
               <Icon
                 size={18}
-                className={`shrink-0 transition-colors ${
-                  active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                className={`shrink-0 transition-colors duration-[120ms] ${
+                  active ? 'text-primary-600' : 'text-neutral-400 group-hover:text-neutral-600'
                 }`}
               />
               <span>{item.name}</span>
-              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-indigo-400" />}
+              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-600" />}
             </Link>
           );
         })}
 
         {/* Guest login prompt */}
         {isGuest && (
-          <div className="mt-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 text-center">
-            <p className="text-xs text-slate-400 mb-3">
+          <div className="mt-4 rounded-xl border border-primary-200 bg-primary-50 p-4 text-center">
+            <p className="text-sm text-neutral-600 mb-3">
               Login untuk akses penuh ke semua fitur kelas.
             </p>
             <Link
               href="/login"
               onClick={onCloseMobile}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors duration-[120ms]"
             >
               <LogIn size={14} />
               <span>Masuk / Login</span>
@@ -156,12 +159,12 @@ function SidebarNavContent({
           </div>
         )}
 
-        {/* Admin section — only for admin & bendahara */}
+        {/* Admin section */}
         {isPrivileged && (
           <div className="pt-4">
             <button
               onClick={() => setAdminExpanded(!adminExpanded)}
-              className="flex w-full items-center justify-between px-2 mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+              className="flex w-full items-center justify-between px-2 mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400 hover:text-neutral-600 transition-colors duration-[120ms] cursor-pointer"
             >
               <span>Manajemen Admin</span>
               <ChevronRight
@@ -171,7 +174,7 @@ function SidebarNavContent({
             </button>
 
             {adminExpanded && (
-              <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
+              <div className="space-y-0.5 animate-slide-up">
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
@@ -180,20 +183,20 @@ function SidebarNavContent({
                       key={item.href}
                       href={item.href}
                       onClick={onCloseMobile}
-                      className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
+                      className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-[120ms] ${
                         active
-                          ? 'bg-rose-600/15 text-rose-400'
-                          : 'text-slate-500 hover:bg-slate-800/60 hover:text-slate-300'
+                          ? 'bg-danger-50 text-danger-700'
+                          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
                       }`}
                     >
                       <Icon
                         size={16}
                         className={`shrink-0 ${
-                          active ? 'text-rose-400' : 'text-slate-600 group-hover:text-slate-400'
+                          active ? 'text-danger-700' : 'text-neutral-400 group-hover:text-neutral-500'
                         }`}
                       />
                       <span className="text-xs">{item.name}</span>
-                      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-400" />}
+                      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-danger-700" />}
                     </Link>
                   );
                 })}
@@ -203,18 +206,18 @@ function SidebarNavContent({
         )}
       </div>
 
-      {/* User badge / Guest badge */}
-      <div className="shrink-0 border-t border-slate-800/60 p-3">
+      {/* User badge */}
+      <div className="shrink-0 p-3" style={{ borderTop: '1px solid var(--border)' }}>
         {isGuest ? (
           <>
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/60 p-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 ring-2 ring-slate-600/30 shrink-0">
-                <User size={18} className="text-slate-500" />
+            <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 ring-2 ring-neutral-200 shrink-0">
+                <User size={18} className="text-neutral-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-300 truncate">Tamu</p>
+                <p className="text-sm font-semibold text-neutral-700 truncate">Tamu</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`inline-block rounded-full border px-1.5 py-0 text-[9px] font-bold capitalize ${roleColors.guest}`}>
+                  <span className={`inline-block rounded-full px-1.5 py-0.5 text-xs font-medium capitalize ${roleColors.guest}`}>
                     guest
                   </span>
                 </div>
@@ -222,7 +225,7 @@ function SidebarNavContent({
             </div>
             <Link
               href="/login"
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-blue-500 transition-all"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-md bg-primary-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors duration-[120ms]"
             >
               <LogIn size={14} />
               <span>Masuk ke Akun</span>
@@ -230,18 +233,18 @@ function SidebarNavContent({
           </>
         ) : (
           <>
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/60 p-3">
+            <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={displayAvatar}
                 alt={displayName}
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-indigo-500/20 shrink-0"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-primary-200 shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-100 truncate">{displayName}</p>
+                <p className="text-sm font-semibold text-neutral-900 truncate">{displayName}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
-                    className={`inline-block rounded-full border px-1.5 py-0 text-[9px] font-bold capitalize ${
+                    className={`inline-block rounded-full px-1.5 py-0.5 text-xs font-medium capitalize ${
                       roleColors[displayRole] ?? roleColors.murid
                     }`}
                   >
@@ -288,43 +291,52 @@ export default function Sidebar({ currentUser }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 bg-[#0B0B1A] border-r border-slate-800/60">
+      <aside
+        className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-header shadow-md"
+        style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
+      >
         <SidebarNavContent {...contentProps} />
       </aside>
 
       {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-slate-800/60 bg-[#0B0B1A]/95 backdrop-blur-md px-4">
+      <div
+        className="lg:hidden fixed top-0 left-0 right-0 z-header flex h-14 items-center justify-between px-4 backdrop-blur-md"
+        style={{
+          background: 'color-mix(in srgb, var(--surface) 95%, transparent)',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-indigo-400" />
-          <span className="bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-base font-extrabold tracking-tight text-transparent">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary-600">
+            <Sparkles className="h-3.5 w-3.5 text-white" />
+          </div>
+          <span className="text-base font-bold tracking-tight text-neutral-900">
             RPL 1
           </span>
         </div>
         <div className="flex items-center gap-2">
           {isGuest ? (
-            <>
-              <Link
-                href="/login"
-                className="flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-3 py-1.5 text-xs font-bold text-indigo-400 hover:bg-indigo-600/30 transition-colors"
-              >
-                <LogIn size={14} />
-                <span>Login</span>
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 rounded-md bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-100 transition-colors duration-[120ms]"
+            >
+              <LogIn size={14} />
+              <span>Login</span>
+            </Link>
           ) : (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={displayAvatar}
                 alt={displayName}
-                className="h-7 w-7 rounded-full object-cover ring-2 ring-indigo-500/20"
+                className="h-7 w-7 rounded-full object-cover ring-2 ring-primary-200"
               />
-              <span className="text-xs font-bold text-slate-200">{displayName}</span>
+              <span className="text-sm font-semibold text-neutral-700">{displayName}</span>
             </>
           )}
           <button
             onClick={() => setMobileOpen(true)}
-            className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"
+            className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors duration-[120ms] cursor-pointer"
           >
             <Menu size={20} />
           </button>
@@ -335,13 +347,16 @@ export default function Sidebar({ currentUser }: SidebarProps) {
       {mobileOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+            className="lg:hidden fixed inset-0 z-modal bg-black/40 backdrop-blur-sm animate-fade-in motion-reduce:animate-none"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-[#0B0B1A] border-r border-slate-800/60 animate-in slide-in-from-left-2 duration-200">
+          <div
+            className="lg:hidden fixed inset-y-0 left-0 z-modal w-72 animate-slide-up motion-reduce:animate-none shadow-lg"
+            style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
+          >
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-3.5 flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-slate-200 transition-colors cursor-pointer"
+              className="absolute right-3 top-3.5 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors duration-[120ms] cursor-pointer"
             >
               <X size={18} />
             </button>
